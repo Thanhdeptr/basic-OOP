@@ -32,7 +32,6 @@ class Soldier(Object):
 
         kill_count = min(self.AD, len(in_range_indexes))
 
-        # Remove killed zombies from the same list (from back to front).
         for idx in reversed(in_range_indexes[:kill_count]):
             del zombie_array[idx]
 
@@ -49,6 +48,42 @@ class Citizen(Object):
 class Zombie(Object):
     def __init__(self, id: int, type: int, x: int, y: int, s: int):
         super().__init__(id, 3, x, y, s)
+
+    def hunt(
+        self,
+        human_array: list[Soldier | Citizen],
+        pending_zombies: list["Zombie"],
+    ) -> int:
+        # 0: no target, 1: moved, 2: infected target
+        if not human_array:
+            return 0
+
+        # Find nearest target with squared distance (faster than sqrt).
+        target_idx = 0
+        best_dist2 = (human_array[0].x - self.x) ** 2 + (human_array[0].y - self.y) ** 2
+        for i in range(1, len(human_array)):
+            h = human_array[i]
+            dist2 = (h.x - self.x) ** 2 + (h.y - self.y) ** 2
+            if dist2 < best_dist2:
+                best_dist2 = dist2
+                target_idx = i
+
+        target = human_array[target_idx]
+        dx = target.x - self.x
+        dy = target.y - self.y
+
+        # If target is in neighboring area (Chebyshev distance <= 1), infect now.
+        if abs(dx) <= 1 and abs(dy) <= 1:
+            infected = human_array.pop(target_idx)
+            pending_zombies.append(Zombie(infected.id, 3, infected.x, infected.y, infected.s))
+            return 2
+
+        # Move exactly one step toward target (diagonal or straight).
+        step_x = 0 if dx == 0 else (1 if dx > 0 else -1)
+        step_y = 0 if dy == 0 else (1 if dy > 0 else -1)
+        self.x += step_x
+        self.y += step_y
+        return 1
 
 
 def _read_n_m() -> tuple[int, int]:
@@ -180,8 +215,6 @@ def get_input_data():
 
 def main():
     game_map, turn, n, m, objects, human_array, zombie_array = get_input_data()
-    # Use these variables for your simulation logic later.
-    print(game_map, turn, n, m, objects, human_array, zombie_array)
 
 
 
