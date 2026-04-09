@@ -80,7 +80,7 @@ def main() -> None:
         # 1) Citizens run.
         for h in human_array:
             if isinstance(h, Citizen):
-                h.run(zombie_array)
+                h.run(human_array, zombie_array)
 
         # 2) Soldiers attack.
         for h in human_array:
@@ -89,7 +89,7 @@ def main() -> None:
 
         # 3) Zombies hunt.
         for z in list(zombie_array):
-            z.hunt(human_array, pending_infected, pending_human_ids)
+            z.hunt(human_array, zombie_array, pending_infected, pending_human_ids)
 
         current_map = build_map(human_array, zombie_array)
         render_map(current_map, turn, len(human_array), len(zombie_array))
