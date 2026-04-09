@@ -26,6 +26,24 @@ Không có tham số → nhập từ bàn phím như bình thường.
 
 ---
 
+## Ví dụ màn hình (`visualize_game.py`)
+
+Ảnh chụp từ terminal khi chạy mô phỏng (chú thích: **1** = Soldier, **2** = Citizen, **3** = Zombie; **.** = ô trống).
+
+**Lượt 1**
+
+![Trạng thái lượt 1](image/turn_1.png)
+
+**Lượt 6**
+
+![Trạng thái lượt 6](image/turn_6.png)
+
+**Lượt kết thúc**
+
+![Trạng thái lượt cuối](image/final_turn.png)
+
+---
+
 ## Định dạng file input
 
 - Dòng 1: `n m` — số cá thể, số lượt tối đa.
@@ -40,28 +58,32 @@ Ví dụ tham khảo: `real_test/sample_input.txt`.
 
 ## OOP được áp dụng như thế nào
 
+### Sơ đồ cấu trúc OOP
+
+![Sơ đồ cấu trúc OOP](image/Human%20vs%20Zombie%20Infection-2026-04-09-053011.png)
+
 ### Kế thừa (Inheritance)
 
-- Lớp cơ sở `Object` giữ trạng thái chung: `id`, `type`, tọa độ, `s` (speed), cờ sống (`is_alive` / `mark_dead`), và `**try_move`** — một chỗ cho quy tắc bước + va chạm + trượt tường.
+- Lớp cơ sở `Object` giữ trạng thái chung: `id`, `type`, tọa độ, `s` (speed), cờ sống (`is_alive` / `mark_dead`), và `try_move` — một chỗ cho quy tắc bước + va chạm + trượt tường.
 - `Soldier`, `Citizen`, `Zombie` kế thừa `Object`, bổ sung thuộc tính và hành vi riêng (`attack`, `run`, `hunt`) mà không nhân đôi code di chuyển cơ bản.
 
 ### Đa hình (Polymorphism)
 
-- Mỗi cá thể cài `**take_turn(phase, ctx)**`: cùng một interface, hành vi khác nhau theo lớp và theo **pha** lượt.
+- Mỗi cá thể cài `take_turn(phase, ctx)`: cùng một interface, hành vi khác nhau theo lớp và theo **pha** lượt.
 - Vòng lặp game không cần `if isinstance` dày — chỉ cần lặp `human_array` / `zombie_array` và gọi `take_turn` với `Phase` phù hợp (citizen run → soldier attack→ zombie hunt).
 
 ### Đóng gói (Encapsulation)
 
-- Trạng thái “mềm” của game (mảng người, zombie, nhiễm trùng chờ xử lý) được gói trong `**GameContext`** (dataclass) thay vì truyền rời rạc nhiều tham số — rõ ràng hơn và dễ mở rộng.
+- Trạng thái “mềm” của game (mảng người, zombie, nhiễm trùng chờ xử lý) được gói trong `GameContext` (dataclass) thay vì truyền rời rạc nhiều tham số — rõ ràng hơn và dễ mở rộng.
 - Soldier/Citizen/Zombie chỉ thao tác qua API của chính chúng (`attack`, `run`, `hunt`, `try_move`) và `ctx` khi cần.
 
 ### Tách phần “không phải đối tượng” (tổ chức module)
 
-- `**io_utils.py`:** đọc từ stdin hoặc từ file theo `sys.argv`
-- `movement_utils.py`**:** quy định cách di chuyển của các đối tượng để tránh trùng vị trí và xử lý ở biên
+- `io_utils.py`: đọc từ stdin hoặc từ file theo `sys.argv`
+- `movement_utils.py`: quy định cách di chuyển của các đối tượng để tránh trùng vị trí và xử lý ở biên
 
 ### Enum & luồng điều khiển
 
-- `**Phase`** (`Enum`) đặt tên cố định cho các giai đoạn trong một lượt, tránh chuỗi magic string và giúp `take_turn` phân nhánh rõ ràng.
+- `Phase` (`Enum`) đặt tên cố định cho các giai đoạn trong một lượt, tránh chuỗi magic string và giúp `take_turn` phân nhánh rõ ràng.
 
-Tóm lại: **Object + các lớp con** mô hình hóa thực thể; `**take_turn` + `Phase`** mô hình hóa hành vi theo lượt; `**GameContext**` gói trạng thái chung; **utils** tách I/O và quy tắc hình học/map khỏi logic OOP thuần.
+Tóm lại: **Object + các lớp con** mô hình hóa thực thể; `take_turn` + `Phase` mô hình hóa hành vi theo lượt; `GameContext` gói trạng thái chung; **utils** tách I/O và quy tắc hình học/map khỏi logic OOP thuần.
